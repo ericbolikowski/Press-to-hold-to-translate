@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Press-to-hold-to-translate</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="top-bar">
+      <div class="lang-pair" id="lang-pair-label">— ↔ —</div>
+      <button id="settings-btn" class="icon-btn" title="Settings" aria-label="Settings">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </header>
+
+    <main>
+      <div class="button-area">
+        <button id="talk-btn" class="talk-btn" aria-label="Hold to translate">
+          <svg viewBox="0 0 24 24" width="56" height="56" fill="currentColor"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11z"/></svg>
+        </button>
+        <div id="status" class="status">Tap or hold to translate</div>
+        <div id="timer" class="timer" hidden>0.0s</div>
+      </div>
+
+      <section class="transcript" id="transcript" aria-live="polite"></section>
+
+      <audio id="remote-audio" autoplay playsinline></audio>
+    </main>
+
+    <!-- Language picker modal -->
+    <div id="picker" class="modal" hidden>
+      <div class="modal-card">
+        <h2>Pick your two languages</h2>
+        <p class="modal-sub">You'll speak in either; the app translates into the other.</p>
+        <div class="picker-row">
+          <label>
+            <span>Language A</span>
+            <select id="lang-a"></select>
+          </label>
+          <div class="swap-icon">↔</div>
+          <label>
+            <span>Language B</span>
+            <select id="lang-b"></select>
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button id="picker-cancel" class="btn-secondary" hidden>Cancel</button>
+          <button id="picker-save" class="btn-primary">Start translating</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" hidden></div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
