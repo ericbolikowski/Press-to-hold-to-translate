@@ -21,6 +21,33 @@ Then open <http://localhost:3000>.
 On first load you pick the two languages. They're saved in `localStorage`; reopen
 the picker any time via the settings gear in the top-right.
 
+## Using it from your phone
+
+Mobile browsers refuse microphone access on plain `http://` unless it's
+`localhost`. Opening `http://<your-laptop-LAN-IP>:3000` from your phone will
+silently fail. You need HTTPS.
+
+The simplest path is [Tailscale](https://tailscale.com) Serve — it gives you a
+valid TLS cert on a private hostname only reachable from your own devices.
+
+```bash
+# one-time
+# install Tailscale on your laptop and your phone, log into the same account
+
+# each session
+npm start &
+tailscale serve --bg --https=443 http://localhost:3000
+# → https://<your-machine>.<your-tailnet>.ts.net
+```
+
+Open that URL on your phone (with Tailscale running) and the mic prompt will
+appear normally. Stop sharing with `tailscale serve --https=443 off`.
+
+If you want to share with someone who isn't on your tailnet, swap
+`tailscale serve` for `tailscale funnel` — that exposes the same URL on the
+public internet. **Heads up**: the URL is unauthenticated, so anyone who finds
+it can burn through your OpenAI credits. Don't leave it on.
+
 ## How it works
 
 - The browser asks the Node backend (`server.js`) for an **ephemeral Realtime
