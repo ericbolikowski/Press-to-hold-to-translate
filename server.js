@@ -7,7 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const PORT = process.env.PORT || 3000;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const REALTIME_MODEL = process.env.REALTIME_MODEL || 'gpt-4o-realtime-preview';
+const REALTIME_MODEL = process.env.REALTIME_MODEL || 'gpt-realtime';
 const VOICE = 'alloy';
 
 if (!OPENAI_API_KEY) {
@@ -46,20 +46,32 @@ app.post('/api/session', async (req, res) => {
   }
 
   try {
-    const r = await fetch('https://api.openai.com/v1/realtime/sessions', {
+    // The new GA Realtime API endpoint. The legacy /v1/realtime/sessions was
+    // removed; the body shape changed too — the whole session config is now
+    // nested under `session`, and audio config moved into `audio.input` /
+    // `audio.output`. Turn detection lives under `audio.input.turn_detection`.
+    const r = await fetch('https://api.openai.com/v1/realtime/client_secrets', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
-        'OpenAI-Beta': 'realtime=v1',
       },
       body: JSON.stringify({
-        model: REALTIME_MODEL,
-        voice: VOICE,
-        modalities: ['audio', 'text'],
-        turn_detection: null,
-        input_audio_transcription: { model: 'whisper-1' },
-        instructions: buildInstructions(languageA, languageB),
+        session: {
+          type: 'realtime',
+          model: REALTIME_MODEL,
+          instructions: buildInstructions(languageA, languageB),
+          output_modalities: ['audio'],
+          audio: {
+            input: {
+              transcription: { model: 'whisper-1' },
+              turn_detection: null,
+            },
+            output: {
+              voice: VOICE,
+            },
+          },
+        },
       }),
     });
 
@@ -70,9 +82,10 @@ app.post('/api/session', async (req, res) => {
     }
 
     const data = await r.json();
+    // New shape returns { value, expires_at, session } at the top level.
     res.json({
-      client_secret: data.client_secret?.value,
-      expires_at: data.client_secret?.expires_at,
+      client_secret: data.value,
+      expires_at: data.expires_at,
       model: REALTIME_MODEL,
     });
   } catch (err) {

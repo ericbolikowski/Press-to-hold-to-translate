@@ -220,13 +220,12 @@ async function ensureSession() {
     await pc.setLocalDescription(offer);
 
     const sdpResp = await fetch(
-      `https://api.openai.com/v1/realtime?model=${encodeURIComponent(model)}`,
+      `https://api.openai.com/v1/realtime/calls?model=${encodeURIComponent(model)}`,
       {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${client_secret}`,
           'Content-Type': 'application/sdp',
-          'OpenAI-Beta': 'realtime=v1',
         },
         body: offer.sdp,
       }
