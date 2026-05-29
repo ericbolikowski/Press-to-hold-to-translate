@@ -189,13 +189,27 @@ async function ensureSession() {
     // 2. Get the mic (lazy — first time only).
     if (!state.micStream) {
       setStatus('Connecting: requesting microphone…');
-      state.micStream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-      });
+      try {
+        state.micStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
+        });
+      } catch (err) {
+        // Translate the cryptic browser errors into something actionable.
+        if (err.name === 'NotAllowedError' || err.name === 'SecurityError') {
+          throw new Error(
+            'Microphone blocked. Click the lock/tune icon in the address bar, ' +
+              'set Microphone to Allow, then reload the page.'
+          );
+        }
+        if (err.name === 'NotFoundError' || err.name === 'OverconstrainedError') {
+          throw new Error('No microphone found. Connect one and reload.');
+        }
+        throw err;
+      }
     }
     setStatus('Connecting: negotiating audio channel…');
 
