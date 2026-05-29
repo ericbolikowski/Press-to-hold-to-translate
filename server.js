@@ -51,13 +51,14 @@ app.post('/api/session', async (req, res) => {
       headers: {
         Authorization: `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
+        'OpenAI-Beta': 'realtime=v1',
       },
       body: JSON.stringify({
         model: REALTIME_MODEL,
         voice: VOICE,
         modalities: ['audio', 'text'],
         turn_detection: null,
-        input_audio_transcription: { model: 'gpt-4o-transcribe' },
+        input_audio_transcription: { model: 'whisper-1' },
         instructions: buildInstructions(languageA, languageB),
       }),
     });

@@ -226,6 +226,7 @@ async function ensureSession() {
         headers: {
           Authorization: `Bearer ${client_secret}`,
           'Content-Type': 'application/sdp',
+          'OpenAI-Beta': 'realtime=v1',
         },
         body: offer.sdp,
       }
