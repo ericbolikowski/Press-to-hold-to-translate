@@ -135,6 +135,11 @@ el.pickerSave.addEventListener('click', async () => {
     // Tear down so a new session is created with new instructions
     teardownSession();
   }
+  // Pre-warm so the first button press is instant. This click is still a
+  // user gesture, so the mic permission prompt will work.
+  ensureSession().catch(() => {
+    /* error already surfaced via toast/status inside ensureSession */
+  });
 });
 
 // ---------- Toast ----------
@@ -162,7 +167,7 @@ async function ensureSession() {
     if (state.pc && state.dc?.readyState === 'open') return;
   }
   state.connecting = true;
-  setStatus('Connecting…');
+  setStatus('Connecting: minting session token…');
 
   try {
     // 1. Get ephemeral token from our backend.
@@ -183,6 +188,7 @@ async function ensureSession() {
 
     // 2. Get the mic (lazy — first time only).
     if (!state.micStream) {
+      setStatus('Connecting: requesting microphone…');
       state.micStream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -191,6 +197,7 @@ async function ensureSession() {
         },
       });
     }
+    setStatus('Connecting: negotiating audio channel…');
 
     // 3. Open RTCPeerConnection + data channel + audio track.
     const pc = new RTCPeerConnection();
@@ -384,12 +391,9 @@ function commitTurn() {
   setStatus('Translating…');
 
   sendEvent({ type: 'input_audio_buffer.commit' });
-  sendEvent({
-    type: 'response.create',
-    response: {
-      modalities: ['audio', 'text'],
-    },
-  });
+  // No `response` config — output_modalities was already set on the session,
+  // and the GA API rejects the old `modalities` override here.
+  sendEvent({ type: 'response.create' });
 }
 
 // Pointer events handle mouse, touch, and pen uniformly.
@@ -495,16 +499,21 @@ function handleRealtimeEvent(event) {
       setTurnMeta(state.currentTurnEl, 'translating');
       break;
 
+    // The GA API renamed these from `response.audio_transcript.*` to
+    // `response.output_audio_transcript.*`. Handle both for resilience.
     case 'response.audio_transcript.delta':
+    case 'response.output_audio_transcript.delta':
       appendTurnTranslationDelta(state.currentTurnEl, event.delta || '');
       break;
 
     case 'response.audio_transcript.done':
+    case 'response.output_audio_transcript.done':
       // Final translated text already accumulated via deltas.
       setTurnMeta(state.currentTurnEl, 'translated');
       break;
 
     case 'response.audio.delta':
+    case 'response.output_audio.delta':
       // Audio playback is handled by the WebRTC remote track; no work needed.
       setButtonState('playing');
       setStatus('Speaking…');
